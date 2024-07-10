@@ -12,7 +12,7 @@ const int width  = 800;
 const int height = 800;
 
 //draw a line from P0(x0,y0) to P1(x1,y1)
-void line(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color) { 
+void line(Vec2f p0, Vec2f p1, TGAImage &image, TGAColor color) { 
     // hard to decide how many pixels to be drawn
 	/*
 	for (float t=0.; t<1.; t+=.01) { 
@@ -31,10 +31,10 @@ void line(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color) {
         image.set(x, y, color); 
     } 
    */
-   int x0=p0.x;
-   int y0=p0.y;
-   int x1=p1.x;
-   int y1=p1.y;
+   float x0=p0.x;
+   float y0=p0.y;
+   float x1=p1.x;
+   float y1=p1.y;
   bool steep=false;
   if(std::abs(x0-x1)<std::abs(y0-y1)){
 	// swap x y
@@ -48,7 +48,7 @@ void line(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color) {
   }
   for (int x=x0; x<=x1; x++) { 
         float t = (x-x0)/(float)(x1-x0); 
-        int y = y0*(1.-t) + y1*t; 
+        float y = y0*(1.-t) + y1*t; 
 		if(steep){
 			image.set(y,x,color);
 		}else{
@@ -79,11 +79,45 @@ void line(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color) {
     } 
 	*/
 }
-void triangle(Vec2i p0,Vec2i p1,Vec2i p2,TGAImage &image,TGAColor color){
+void triangle(Vec2f p0,Vec2f p1,Vec2f p2,TGAImage &image,TGAColor color){
 	line(p0,p1,image,color);
 	line(p0,p2,image,color);
 	line(p1,p2,image,color);
-
+	if(p1.y>p0.y){
+		float t=p0.x;
+		p0.x=p1.x;
+		p1.x=t;
+		t=p0.y;
+		p0.y=p1.y;
+		p1.y=t;
+	}
+	if(p2.y>p0.y){
+		float t=p0.x;
+		p0.x=p2.x;
+		p2.x=t;
+		t=p0.y;
+		p0.y=p2.y;
+		p2.y=t;
+	}
+	if(p1.x>p2.x){
+		float t=p1.x;
+		p1.x=p2.x;
+		p2.x=t;
+		t=p1.y;
+		p1.y=p2.y;
+		p2.y=t;
+	}
+	float k=(p2.y-p1.y)/(p2.x-p1.x);
+	float b=p1.y-p1.x*k;
+	float dx=1;
+	int i=0;
+	while (i<100&&abs(i*dx+p1.x-p2.x)>abs(dx)/2)
+	{
+		float dy=k*(i*dx+p1.x)+b;
+		Vec2f t=Vec2f(i*dx+p1.x,dy);
+		line(p0,t,image,color);
+		i++;
+	}
 }
 int main(int argc, char** argv) {
 	TGAImage image(width, height, TGAImage::RGB);
@@ -107,9 +141,9 @@ int main(int argc, char** argv) {
 	// 		line(x0, y0, x1, y1, image, white); 
 	// 	} 
 	// }
-	Vec2i t0[3] = {Vec2i(10, 70),   Vec2i(50, 160),  Vec2i(70, 80)};
-    Vec2i t1[3] = {Vec2i(180, 50),  Vec2i(150, 1),   Vec2i(70, 180)};
-    Vec2i t2[3] = {Vec2i(180, 150), Vec2i(120, 160), Vec2i(130, 180)};
+	Vec2f t0[3] = {Vec2f(10, 70),   Vec2f(50, 160),  Vec2f(70, 80)};
+    Vec2f t1[3] = {Vec2f(180, 50),  Vec2f(150, 1),   Vec2f(70, 180)};
+    Vec2f t2[3] = {Vec2f(180, 150), Vec2f(120, 160), Vec2f(130, 180)};
 
     triangle(t0[0], t0[1], t0[2], image, red);
     triangle(t1[0], t1[1], t1[2], image, white);
